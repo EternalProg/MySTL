@@ -9,7 +9,95 @@ private:
   size_t m_Size = 0;
   size_t m_Capacity = 0;
 
-  void ReAlloc(size_t newCapacity) 
+public:
+//-------------------------Constructor-----------------
+  Vector() 
+  {
+    resize(2);
+  }
+
+//-------------------------Methods---------------------
+
+  void push_back(const T& value) 
+i  {
+    if(m_Size == m_Capacity) 
+    {   
+      resize(m_Capacity + m_Capacity / 2); 
+    }
+
+    m_Data[m_Size] = value;
+    ++m_Size;
+  }
+
+  void emplace_back(const T& value) 
+  {
+    if(m_Size >= m_Capacity)
+    {
+      resize(m_Capacity + m_Capacity / 2);
+    }
+
+    m_Data[m_Size] = value;
+    m_Size++;
+  }
+
+  void pop_back()
+  {
+  	
+  }
+
+  void emplace_back()
+  {
+
+  }
+
+  --- begin()
+  {
+
+  }
+
+  --- end()
+  {
+
+  }
+
+  --- swap()
+  {
+
+  }
+
+  --- assign(const int )
+  {
+
+  }
+
+//------------------------Size------------------
+
+  size_t size() const 
+  {
+    return m_Size;
+  }
+
+  size_t capacity() const
+  {
+    return m_Capacity;
+  }
+
+  void clear()
+  {
+
+  }
+
+  bool empty() 
+  {
+    if(size == 0) return true;
+    return false;
+  }
+  void reserve(size_t newCapacity)
+  {
+      
+  }
+
+  void resize(size_t newSize, const T& value = T()) 
   {
     // 1. allocate a new block of memory
     // 2. cope/move old elements into a new block
@@ -31,32 +119,10 @@ private:
     delete[] m_Data;
     m_Data = newBlock;
     m_Capacity = newCapacity;
-  }
-public:
-  Vector() 
-  {
-    ReAlloc(2);
+
   }
 
-  void push_back(const T& value) {
-    if(m_Size >= m_Capacity) 
-    {   
-      ReAlloc(m_Capacity + m_Capacity / 2); 
-    }
-
-    m_Data[m_Size] = value;
-    m_Size++;
-  }
-
-  size_t size() const 
-  {
-    return m_Size;
-  }
-
-  size_t capacity() const
-  {
-    return m_Capacity;
-  }
+//---------------Operator-----------------------
 
   const T& operator[](size_t index) const
   {
@@ -72,7 +138,7 @@ public:
     return m_Data[index];
   }
 
-  
+//-----------------Destructor------------------
   ~Vector()
   {
     delete[] m_Data;
@@ -89,7 +155,7 @@ void PrintVector(const Vector<T>& v)
 
   std::cout << "----------------------" << '\n';
 }
-
+/*
 class Test {
 private:
   int m_x = 0;
@@ -102,7 +168,7 @@ public:
 
   Test(int x, int y, int z)
     : m_x(x), m_y(y), m_z(z)
-  {
+  {:
   }
 
   Test(const Test& other)
@@ -110,7 +176,7 @@ public:
   {
   }
 
-};
+};*/
 
 int main()
 {
