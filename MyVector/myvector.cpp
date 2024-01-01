@@ -13,8 +13,21 @@ public:
 //-------------------------Constructor-----------------
   Vector() 
   {
-    resize(2);
   }
+  
+  Vector(const size_t size, const T& value = T())
+  {
+    resize(size, value);
+  }
+
+  Vector(const Vector<T>& other)
+    :m_Size(other.m_Size), m_Capacity(other.m_Capacity)
+  {
+    for(int i = 0; i < m_Size; ++i)
+      m_Data[i] = other.m_Data[i];   
+  }
+
+
 
 //-------------------------Methods---------------------
 
@@ -25,7 +38,7 @@ i  {
       resize(m_Capacity + m_Capacity / 2); 
     }
 
-    m_Data[m_Size] = value;
+    new (m_Data+m_Size) T(value);
     ++m_Size;
   }
 
@@ -94,7 +107,28 @@ i  {
   }
   void reserve(size_t newCapacity)
   {
-      
+    if(newCapacity <= m_Capacity) return;
+
+    newarr = reinterpret_cast<T*>(new byte[n * sizeof(T)]);
+
+    for(size_t i = 0; i < m_Size; ++i)
+    {
+      new (newarr + i) T(arr[i]); //placement new
+        //Using this syntax, we explicitly call the constructor at the given address
+        // new (address) (type) initializer
+        // Constructor T() at the address (newarr + 1)
+        // from such parameters: arr[i]
+        
+        // newarr[i] = m_Data[i] -- Wrong
+        // because it is not a fact that an object has been created at this address.
+    }
+    for(size_t i = 0; i < m_Size; ++i) 
+    { 
+      (m_Data + i)->~T();
+    }
+    delete[] reinterpret_cast<byte*>(m_Data);
+    m_Data = newarr;
+    m_Capacity = newCapacity;
   }
 
   void resize(size_t newSize, const T& value = T()) 
@@ -102,24 +136,13 @@ i  {
     // 1. allocate a new block of memory
     // 2. cope/move old elements into a new block
     // 3. delete 
+    if(newSize > m_Capacity) reserve(newSize);
 
-    T* newBlock = new T[newCapacity];
-    
-    if(newCapacity < m_Size) 
+    for(size_t i = m_Size; i < newSize; i++)
     {
-      m_Size = newCapacity;
+      new (m_Data+i) T(value);
     }
-
-    for(size_t i = 0; i < m_Size; i++) 
-    {
-      newBlock[i] = std::move(m_Data[i]); 
-    }
-    
-
-    delete[] m_Data;
-    m_Data = newBlock;
-    m_Capacity = newCapacity;
-
+    if(newSize < m_Size) m_Size = newSize;
   }
 
 //---------------Operator-----------------------
