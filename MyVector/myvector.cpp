@@ -23,8 +23,17 @@ public:
   Vector(const Vector<T>& other)
     :m_Size(other.m_Size), m_Capacity(other.m_Capacity)
   {
+    m_Data = new T[m_Capacity];
     for(int i = 0; i < m_Size; ++i)
       m_Data[i] = other.m_Data[i];   
+  }
+
+  Vector(std::initializer_list<T> initList)   
+  {
+    reserve(initList.size());
+    for (const auto& element : initList) {
+        emplace_back(element);
+    }
   }
 
 
@@ -32,7 +41,7 @@ public:
 //-------------------------Methods---------------------
 
   void push_back(const T& value) 
-i  {
+  {
     if(m_Size == m_Capacity) 
     {   
       resize(m_Capacity + m_Capacity / 2); 
@@ -49,33 +58,33 @@ i  {
       resize(m_Capacity + m_Capacity / 2);
     }
 
-    m_Data[m_Size] = value;
+    new (m_Data+m_Size) T(value);
     m_Size++;
   }
 
   void pop_back()
   {
-  	
+    if (m_Size > 0) {
+        --m_Size;
+    }
   }
 
-  void emplace_back()
-  {
 
+  T* begin()
+  {
+    return m_Data;
   }
 
-  --- begin()
+  T* end()
   {
-
+    return m_Data + m_Size;
   }
 
-  --- end()
+  void swap(Vector<T>& other)
   {
-
-  }
-
-  --- swap()
-  {
-
+    std::swap(m_Data, other.m_Data);
+    std::swap(m_Size, other.m_Size);
+    std::swap(m_Capacity, other.m_Capacity);
   }
 
   --- assign(const int )
@@ -97,23 +106,36 @@ i  {
 
   void clear()
   {
-
+    for(int i = 0; i < m_Size; ++i) {
+      m_Data[i].~T();
+    }
+    m_Size = 0;
   }
 
-  bool empty() 
+  bool empty() const
   {
-    if(size == 0) return true;
-    return false;
+    return m_Size == 0;
   }
+
   void reserve(size_t newCapacity)
   {
     if(newCapacity <= m_Capacity) return;
 
     newarr = reinterpret_cast<T*>(new byte[n * sizeof(T)]);
+    
+    size_t i = 0;
+    
+    try {
+      std::uninitialized_copy(m_Data, m_Data+m_Size, newarr);
+    } catch(...) {
+      delete[] reinterpret_cast<byte*>(newarr);
+      throw;
+    }
 
-    for(size_t i = 0; i < m_Size; ++i)
-    {
-      new (newarr + i) T(arr[i]); //placement new
+    /*try {
+      for(; i < m_Size; ++i)
+      {
+        new (newarr + i) T(arr[i]); //placement new
         //Using this syntax, we explicitly call the constructor at the given address
         // new (address) (type) initializer
         // Constructor T() at the address (newarr + 1)
@@ -121,6 +143,13 @@ i  {
         
         // newarr[i] = m_Data[i] -- Wrong
         // because it is not a fact that an object has been created at this address.
+      }
+    } catch (...) {
+        for(size_t j = 0; j < i; ++j) {
+          (newarr+i)->~T();
+        }
+        delete[] reinterpret_cast<byte*>(newarr);
+        throw;
     }
     for(size_t i = 0; i < m_Size; ++i) 
     { 
@@ -129,13 +158,10 @@ i  {
     delete[] reinterpret_cast<byte*>(m_Data);
     m_Data = newarr;
     m_Capacity = newCapacity;
-  }
+  }*/
 
   void resize(size_t newSize, const T& value = T()) 
   {
-    // 1. allocate a new block of memory
-    // 2. cope/move old elements into a new block
-    // 3. delete 
     if(newSize > m_Capacity) reserve(newSize);
 
     for(size_t i = m_Size; i < newSize; i++)
