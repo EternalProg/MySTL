@@ -87,19 +87,29 @@ public:
     std::swap(m_Capacity, other.m_Capacity);
   }
 
-  --- assign(const int )
+  void assign(const size_t size, const T& value)
   {
-
+    if(m_Capacity < size)
+    {
+      resize(size,value);
+    } 
+    else 
+    {
+      for(size_t i = 0; i < size; ++i)
+      {
+        m_Data[i] = value;
+      }
+      m_Size = size;
   }
 
 //------------------------Size------------------
 
-  size_t size() const 
+  size_t size() const noexcept 
   {
     return m_Size;
   }
 
-  size_t capacity() const
+  size_t capacity() const noexcept
   {
     return m_Capacity;
   }
@@ -112,7 +122,7 @@ public:
     m_Size = 0;
   }
 
-  bool empty() const
+  bool empty() const noexcept
   {
     return m_Size == 0;
   }
@@ -123,7 +133,7 @@ public:
 
     newarr = reinterpret_cast<T*>(new byte[n * sizeof(T)]);
     
-    size_t i = 0;
+    //size_t i = 0;
     
     try {
       std::uninitialized_copy(m_Data, m_Data+m_Size, newarr);
@@ -156,9 +166,9 @@ public:
       (m_Data + i)->~T();
     }
     delete[] reinterpret_cast<byte*>(m_Data);
-    m_Data = newarr;
+    m_Data = newarr;*/
     m_Capacity = newCapacity;
-  }*/
+  }
 
   void resize(size_t newSize, const T& value = T()) 
   {
@@ -187,10 +197,57 @@ public:
     return m_Data[index];
   }
 
+  Vector<T>& operator=(Vector<T> other)
+  {
+    /*
+    if(this == &other)
+        return *this;
+    if(m_Size != other.m_Size)
+      resize(other.m_Size);
+    
+    std::copy(other.m_Data, other.m_Data + other.m_Size, m_Data);
+    return *this;
+    */
+    swap(*this,other); 
+    return *this;
+  }
+
+  Vector<T>& operator+=(const Vector<T>& other)
+  {
+    auto end = m_Data+m_Size;
+    if(m_Capacity < m_Size + other.m_Size) 
+    {
+      resize(m_Size+other.m_Size);
+    }
+    
+    std::copy(other.m_Data, other.m_Data+other.m_Size, end);
+    return *this;
+  }
+
+  friend Vector<T> operator+(Vector<T> lhs, const Vector<T>& rhs)
+  {
+    lhs += rhs;
+    return lhs;
+  }
+
+  friend bool operator==(const Vector<T>& lhs, const Vector<T>& rhs)
+  {
+    if(lhs.m_Size != rhs.m_Size) return false;
+
+    for(int i = 0; i < lhs.m_Size; ++i)
+    {
+      if(lhs.m_Data[i] != rhs.m_Data[i]) return false;
+    }
+    return true;
+  }
+
+
+
 //-----------------Destructor------------------
   ~Vector()
   {
-    delete[] m_Data;
+    if(m_Data)
+        delete[] m_Data;
   }
 };
 
