@@ -1,57 +1,53 @@
-#include<iostream>
-#include<cstring>
+#include <cstring>
+#include <iostream>
 using std::cout;
 
 class String {
-private:
+ private:
   char* ch;
   size_t sz;
   size_t cap;
   static int count;
-public:
-  String(): sz(0), cap(0) 
-  {
-    ++count;
-  }
-  
-  String(int size):ch(new char[size]), sz(size), cap(size)
-  {
+
+ public:
+  String() : sz(0), cap(0) { ++count; }
+
+  String(int size) : ch(new char[size]), sz(size), cap(size) {
     memset(ch, 0, sz);
     ++count;
   }
-  String(int size, char symbol): ch(new char[size]), sz(size), cap(size) 
-  {
+  String(int size, char symbol) : ch(new char[size]), sz(size), cap(size) {
     memset(ch, symbol, sz);
     ++count;
   }
 
   friend std::ostream& operator<<(std::ostream& out, const String& str) {
     for (char* i = str.ch; i != str.ch + str.sz; ++i) {
-        out << *i;
+      out << *i;
     }
     out << '\n';
     return out;
   }
 
   void print() {
-    for(char* i = ch; i !=ch+sz; i++) { 
+    for (char* i = ch; i != ch + sz; i++) {
       cout << *i;
     }
     cout << '\n';
   }
-  
-  //The copy-and-swap assignment
+
+  // The copy-and-swap assignment
   String& operator=(String str) noexcept {
     std::swap(sz, str.sz);
     std::swap(ch, str.ch);
     return *this;
   }
   // Naive Method
-  // String operator=(const String& str) { 
+  // String operator=(const String& str) {
   //   //Guard self copy
   //   if(this == &str)
   //       return *this;
-  //   
+  //
   //   if(sz != str.sz) {
   //     char* temp = new char[str.sz];
   //     delete[] ch;
@@ -61,18 +57,18 @@ public:
   //   std::copy(str.ch, str.ch + str.sz, ch);
   //   return *this;
   // }
-  
+
   bool operator<(const String& str) {
-    if(this->sz < str.sz) return true;
+    if (this->sz < str.sz) return true;
     return false;
   }
-  
+
   bool operator>(const String& str) {
-    if(this->sz > str.sz) return true;
+    if (this->sz > str.sz) return true;
     return false;
   }
-  
-  //bool operator<=
+
+  // bool operator<=
 
   // bool operator==(const String& str) {
   //   if(this->sz  str.sz)
@@ -81,58 +77,49 @@ public:
   // String operator+(const String& str) {
   //
   // }
-  
-  int size() {
-    return sz;
-  }
-  
-  int capacity() {
-    return cap;
-  }
+
+  int size() { return sz; }
+
+  int capacity() { return cap; }
 
   bool empty() {
-    if(sz == 0) return true;
+    if (sz == 0) return true;
     return false;
   }
 
   int find(char symbol) {
-    for(int i = 0; i < sz; i++) {
-      if(ch[i] == symbol) return i;
+    for (int i = 0; i < sz; i++) {
+      if (ch[i] == symbol) return i;
     }
     return -1;
   }
 
-  static int getCount() {
-    return count;
-  }
+  static int getCount() { return count; }
 
-  //void upper()
-  //void lower()
+  // void upper()
+  // void lower()
 
-  ~String()
-  {
+  ~String() {
     delete[] ch;
     --count;
   }
-
 };
 
 int String::count = 0;
 
-int main()
-{
+int main() {
   String str(3, 'g');
   String str1(5, 'f');
-  
+
   str.print();
   cout << (str < str1) << ' ' << (str1 > str) << ' ' << str.find('g') << '\n';
-  
+
   cout << str << str1;
   cout << str.size() << ' ' << str.capacity() << std::endl;
 
   String str2;
-  cout << "Str2 is empty: " << str.empty() << '\n'; // wrong
-  
+  cout << "Str2 is empty: " << str.empty() << '\n';  // wrong
+
   str2 = (str);
   str2.print();
 

@@ -1,298 +1,223 @@
-#include <iostream>
 #include <cassert>
+#include <cstdlib>
+#include <iostream>
+#include <memory>
 
 template <typename T>
-class Vector 
-{
-private:
-  T* m_Data = nullptr;
+class Vector {
+ private:
+  T *m_Data = nullptr;
   size_t m_Size = 0;
   size_t m_Capacity = 0;
 
-public:
-//-------------------------Constructor-----------------
-  Vector() 
-  {
-  }
-  
-  Vector(const size_t size, const T& value = T())
-  {
-    resize(size, value);
-  }
+ public:
+  //-------------------------Constructor-----------------
+  Vector() {}
 
-  Vector(const Vector<T>& other)
-    :m_Size(other.m_Size), m_Capacity(other.m_Capacity)
-  {
+  Vector(const size_t size, const T &value = T()) { resize(size, value); }
+
+  Vector(const Vector<T> &other)
+      : m_Size(other.m_Size), m_Capacity(other.m_Capacity) {
     m_Data = new T[m_Capacity];
-    for(int i = 0; i < m_Size; ++i)
-      m_Data[i] = other.m_Data[i];   
+    for (int i = 0; i < m_Size; ++i) m_Data[i] = other.m_Data[i];
   }
 
-  Vector(std::initializer_list<T> initList)   
-  {
+  Vector(std::initializer_list<T> initList) {
     reserve(initList.size());
-    for (const auto& element : initList) {
-        emplace_back(element);
+    for (const auto &element : initList) {
+      emplace_back(element);
     }
   }
 
+  //-------------------------Methods---------------------
 
-
-//-------------------------Methods---------------------
-
-  void push_back(const T& value) 
-  {
-    if(m_Size == m_Capacity) 
-    {   
-      resize(m_Capacity + m_Capacity / 2); 
-    }
-
-    new (m_Data+m_Size) T(value);
-    ++m_Size;
-  }
-
-  void emplace_back(const T& value) 
-  {
-    if(m_Size >= m_Capacity)
-    {
+  void push_back(const T &value) {
+    if (m_Size == m_Capacity) {
       resize(m_Capacity + m_Capacity / 2);
     }
 
-    new (m_Data+m_Size) T(value);
+    new (m_Data + m_Size) T(value);
+    ++m_Size;
+  }
+
+  void emplace_back(const T &value) {
+    if (m_Size >= m_Capacity) {
+      resize(m_Capacity + m_Capacity / 2);
+    }
+
+    new (m_Data + m_Size) T(value);
     m_Size++;
   }
 
-  void pop_back()
-  {
+  void pop_back() {
     if (m_Size > 0) {
-        --m_Size;
+      --m_Size;
+      (m_Data + m_Size)->~T();
     }
   }
 
+  T *begin() { return m_Data; }
 
-  T* begin()
-  {
-    return m_Data;
-  }
+  T *end() { return m_Data + m_Size; }
 
-  T* end()
-  {
-    return m_Data + m_Size;
-  }
-
-  void swap(Vector<T>& other)
-  {
+  void swap(Vector<T> &other) {
     std::swap(m_Data, other.m_Data);
     std::swap(m_Size, other.m_Size);
     std::swap(m_Capacity, other.m_Capacity);
   }
 
-  void assign(const size_t size, const T& value)
-  {
-    if(m_Capacity < size)
-    {
-      resize(size,value);
-    } 
-    else 
-    {
-      for(size_t i = 0; i < size; ++i)
-      {
+  void assign(const size_t size, const T &value) {
+    if (m_Capacity < size) {
+      resize(size, value);
+    } else {
+      for (size_t i = 0; i < size; ++i) {
         m_Data[i] = value;
       }
       m_Size = size;
+    }
   }
 
-//------------------------Size------------------
+  //------------------------Size------------------
 
-  size_t size() const noexcept 
-  {
-    return m_Size;
-  }
+  size_t size() const noexcept { return m_Size; }
 
-  size_t capacity() const noexcept
-  {
-    return m_Capacity;
-  }
+  size_t capacity() const noexcept { return m_Capacity; }
 
-  void clear()
-  {
-    for(int i = 0; i < m_Size; ++i) {
+  void clear() {
+    for (int i = 0; i < m_Size; ++i) {
       m_Data[i].~T();
     }
     m_Size = 0;
   }
 
-  bool empty() const noexcept
-  {
-    return m_Size == 0;
-  }
+  bool empty() const noexcept { return m_Size == 0; }
 
-  void reserve(size_t newCapacity)
-  {
-    if(newCapacity <= m_Capacity) return;
+  void reserve(size_t newCapacity) {
+    if (newCapacity <= m_Capacity) return;
 
-    newarr = reinterpret_cast<T*>(new byte[n * sizeof(T)]);
-    
-    //size_t i = 0;
-    
+    auto newarr = reinterpret_cast<T *>(new int8_t[newCapacity * sizeof(T)]);
     try {
-      std::uninitialized_copy(m_Data, m_Data+m_Size, newarr);
-    } catch(...) {
-      delete[] reinterpret_cast<byte*>(newarr);
+      std::uninitialized_copy(m_Data, m_Data + m_Size, newarr);
+    } catch (...) {
+      delete[] reinterpret_cast<int8_t *>(newarr);
       throw;
     }
 
-    /*try {
-      for(; i < m_Size; ++i)
-      {
-        new (newarr + i) T(arr[i]); //placement new
-        //Using this syntax, we explicitly call the constructor at the given address
-        // new (address) (type) initializer
-        // Constructor T() at the address (newarr + 1)
-        // from such parameters: arr[i]
-        
-        // newarr[i] = m_Data[i] -- Wrong
-        // because it is not a fact that an object has been created at this address.
-      }
-    } catch (...) {
-        for(size_t j = 0; j < i; ++j) {
-          (newarr+i)->~T();
-        }
-        delete[] reinterpret_cast<byte*>(newarr);
-        throw;
-    }
-    for(size_t i = 0; i < m_Size; ++i) 
-    { 
+    for (size_t i = 0; i < m_Size; ++i) {
       (m_Data + i)->~T();
     }
-    delete[] reinterpret_cast<byte*>(m_Data);
-    m_Data = newarr;*/
+    delete[] reinterpret_cast<int8_t *>(m_Data);
+    m_Data = std::move(newarr);
     m_Capacity = newCapacity;
   }
 
-  void resize(size_t newSize, const T& value = T()) 
-  {
-    if(newSize > m_Capacity) reserve(newSize);
+  void resize(size_t newSize, const T &value = T()) {
+    if (newSize > m_Capacity) reserve(newSize);
 
-    for(size_t i = m_Size; i < newSize; i++)
-    {
-      new (m_Data+i) T(value);
+    for (size_t i = m_Size; i < newSize; i++) {
+      new (m_Data + i) T(value);
     }
-    if(newSize < m_Size) m_Size = newSize;
+    if (newSize < m_Size) m_Size = newSize;
   }
 
-//---------------Operator-----------------------
+  //---------------Operator-----------------------
 
-  const T& operator[](size_t index) const
-  {
+  const T &operator[](size_t index) const { return m_Data[index]; }
+
+  T &operator[](size_t index) { return m_Data[index]; }
+  T &at(size_t index) {
     assert(index >= 0 && index < m_Size);
-
-    return m_Data[index];
-  } 
-  
-  T& operator[](size_t index) 
-  {
-    assert(index >= 0 && index < m_Size);
-
     return m_Data[index];
   }
 
-  Vector<T>& operator=(Vector<T> other)
-  {
+  Vector<T> &operator=(Vector<T> other) {
     /*
     if(this == &other)
         return *this;
     if(m_Size != other.m_Size)
       resize(other.m_Size);
-    
+
     std::copy(other.m_Data, other.m_Data + other.m_Size, m_Data);
     return *this;
     */
-    swap(*this,other); 
+    swap(*this, other);
     return *this;
   }
 
-  Vector<T>& operator+=(const Vector<T>& other)
-  {
-    auto end = m_Data+m_Size;
-    if(m_Capacity < m_Size + other.m_Size) 
-    {
-      resize(m_Size+other.m_Size);
+  Vector<T> &operator+=(const Vector<T> &other) {
+    auto end = m_Data + m_Size;
+    if (m_Capacity < m_Size + other.m_Size) {
+      resize(m_Size + other.m_Size);
     }
-    
-    std::copy(other.m_Data, other.m_Data+other.m_Size, end);
+
+    std::copy(other.m_Data, other.m_Data + other.m_Size, end);
     return *this;
   }
 
-  friend Vector<T> operator+(Vector<T> lhs, const Vector<T>& rhs)
-  {
+  friend Vector<T> operator+(Vector<T> lhs, const Vector<T> &rhs) {
     lhs += rhs;
     return lhs;
   }
 
-  friend bool operator==(const Vector<T>& lhs, const Vector<T>& rhs)
-  {
-    if(lhs.m_Size != rhs.m_Size) return false;
+  friend bool operator==(const Vector<T> &lhs, const Vector<T> &rhs) {
+    if (lhs.m_Size != rhs.m_Size) return false;
 
-    for(int i = 0; i < lhs.m_Size; ++i)
-    {
-      if(lhs.m_Data[i] != rhs.m_Data[i]) return false;
+    for (int i = 0; i < lhs.m_Size; ++i) {
+      if (lhs.m_Data[i] != rhs.m_Data[i]) return false;
     }
     return true;
   }
 
-
-
-//-----------------Destructor------------------
-  ~Vector()
-  {
-    if(m_Data)
-        delete[] m_Data;
+  //-----------------Destructor------------------
+  ~Vector() {
+    if (m_Data) delete[] m_Data;
   }
 };
 
-template<typename T>
-void PrintVector(const Vector<T>& v) 
-{
-  for(auto i = 0; i < v.size(); i++) 
-  {
+template <typename T>
+void PrintVector(const Vector<T> &v) {
+  for (auto i = 0; i < v.size(); i++) {
     std::cout << v[i] << '\n';
   }
 
   std::cout << "----------------------" << '\n';
 }
-/*
-class Test {
-private:
-  int m_x = 0;
-  int m_y = 0;
-  int m_z = 0;
-public:
-  Test()
-  {
-  }
 
-  Test(int x, int y, int z)
-    : m_x(x), m_y(y), m_z(z)
-  {:
-  }
-
-  Test(const Test& other)
-    :m_x(other.m_x), m_y(other.m_y), m_z(other.m_z) 
-  {
-  }
-
-};*/
-
-int main()
-{
+int main() {
+  using std::endl, std::cout;
   Vector<std::string> v;
-  
   v.push_back("C++");
   v.push_back("STL");
   v.push_back("VECTOR");
-  
+
   PrintVector(v);
 
-  v.push_back()
+  if (!v.empty()) {
+    cout << "Vector is not empty and his size is: " << v.size() << endl;
+  }
+  cout << "Vector capacity " << v.capacity() << endl;
+
+  v.resize(10);
+  cout << "Vector size after resize " << v.size() << endl;
+  cout << "Vector capacity after reserve " << v.capacity() << endl;
+
+  cout << "Vector end " << v.end() << endl;
+
+  v.pop_back();
+  cout << "Result of using pop_back: " << endl;
+  PrintVector(v);
+
+  Vector<std::string> v1 = {"never", "give", "up"};
+  v.swap(v1);
+  cout << "Vector v after swap:" << endl;
+  PrintVector(v);
+
+  v1.assign(3, "something");
+  cout << "Our vector after assign methods: " << endl;
+  PrintVector(v1);
+
+  v.clear();
+  if (v.empty()) cout << "Now vector is empty!!!" << endl;
+
+  return 0;
 }
