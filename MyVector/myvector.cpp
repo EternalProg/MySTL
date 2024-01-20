@@ -22,10 +22,10 @@ class Vector {
     for (int i = 0; i < m_Size; ++i) m_Data[i] = other.m_Data[i];
   }
 
-  Vector(std::initializer_list<T> initList) {
+  Vector(const std::initializer_list<T>& initList) {
     reserve(initList.size());
     for (const auto &element : initList) {
-      emplace_back(element);
+      push_back(element);
     }
   }
 
@@ -33,21 +33,21 @@ class Vector {
 
   void push_back(const T &value) {
     if (m_Size == m_Capacity) {
-      resize(m_Capacity + m_Capacity / 2);
+        reserve(m_Capacity + m_Capacity / 2 + 1);
     }
 
     new (m_Data + m_Size) T(value);
     ++m_Size;
-  }
+}
 
-  void emplace_back(const T &value) {
+  void emplace_back(T&& value) {
     if (m_Size >= m_Capacity) {
-      resize(m_Capacity + m_Capacity / 2);
+        reserve(m_Capacity + m_Capacity / 2 + 1);
     }
 
-    new (m_Data + m_Size) T(value);
+    new (m_Data + m_Size) T(std::move(value));
     m_Size++;
-  }
+}
 
   void pop_back() {
     if (m_Size > 0) {
@@ -56,9 +56,9 @@ class Vector {
     }
   }
 
-  T *begin() { return m_Data; }
+  T* begin() { return m_Data; }
 
-  T *end() { return m_Data + m_Size; }
+  T* end() { return m_Data + m_Size; }
 
   void swap(Vector<T> &other) {
     std::swap(m_Data, other.m_Data);
@@ -84,10 +84,13 @@ class Vector {
   size_t capacity() const noexcept { return m_Capacity; }
 
   void clear() {
-    for (int i = 0; i < m_Size; ++i) {
-      m_Data[i].~T();
+    for (size_t i = 0; i < m_Size; ++i) {
+        m_Data[i].~T();
     }
+    delete[] reinterpret_cast<int8_t*>(m_Data);
+    m_Data = nullptr;
     m_Size = 0;
+    m_Capacity = 0;
   }
 
   bool empty() const noexcept { return m_Size == 0; }
@@ -115,7 +118,7 @@ class Vector {
     if (newSize > m_Capacity) reserve(newSize);
 
     for (size_t i = m_Size; i < newSize; i++) {
-      new (m_Data + i) T(value);
+      new (m_Data + i) T(std::move(value));
     }
     if (newSize < m_Size) m_Size = newSize;
   }
@@ -170,7 +173,10 @@ class Vector {
 
   //-----------------Destructor------------------
   ~Vector() {
-    if (m_Data) delete[] m_Data;
+    for (size_t i = 0; i < m_Size; ++i) {
+        m_Data[i].~T();
+    }
+    delete[] reinterpret_cast<int8_t*>(m_Data);
   }
 };
 
@@ -186,6 +192,7 @@ void PrintVector(const Vector<T> &v) {
 int main() {
   using std::endl, std::cout;
   Vector<std::string> v;
+  
   v.push_back("C++");
   v.push_back("STL");
   v.push_back("VECTOR");
@@ -193,31 +200,31 @@ int main() {
   PrintVector(v);
 
   if (!v.empty()) {
-    cout << "Vector is not empty and his size is: " << v.size() << endl;
+    cout << "Vector v is not empty and his size is: " << v.size() << endl;
   }
-  cout << "Vector capacity " << v.capacity() << endl;
+  cout << "Vector v capacity " << v.capacity() << endl;
 
   v.resize(10);
-  cout << "Vector size after resize " << v.size() << endl;
-  cout << "Vector capacity after reserve " << v.capacity() << endl;
+  cout << "Vector v size after resize " << v.size() << endl;
+  cout << "Vector v capacity after reserve " << v.capacity() << endl;
 
-  cout << "Vector end " << v.end() << endl;
+  cout << "Vector v end " << v.end() << endl;
 
   v.pop_back();
   cout << "Result of using pop_back: " << endl;
   PrintVector(v);
 
-  Vector<std::string> v1 = {"never", "give", "up"};
+  Vector<std::string> v1{"never", "give", "up"};
   v.swap(v1);
-  cout << "Vector v after swap:" << endl;
+  cout << "Vector v after swap with v1:" << endl;
   PrintVector(v);
 
   v1.assign(3, "something");
-  cout << "Our vector after assign methods: " << endl;
+  cout << "v1 after assign methods: " << endl;
   PrintVector(v1);
 
   v.clear();
-  if (v.empty()) cout << "Now vector is empty!!!" << endl;
+  if (v.empty()) cout << "Now vector v1 is empty!!!" << endl;
 
   return 0;
 }
