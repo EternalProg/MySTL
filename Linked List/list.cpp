@@ -151,16 +151,26 @@ int main() {
   List<int> list = {1, 2, 3, 4, 5};
   list.printList();
   list.push_back(6);
+  std::cout << "List 1 after push_back(6)\n";
   list.printList();
   list.pop_front();
   list.printList();
+  std::cout << "List 1 pop_front\n";
   list.pop_back();
   list.printList();
+  std::cout << "List 1 pop_back\n";
 
   List<int> list2 = list;
+  std::cout << "List 2 copy list1\n";
+  list2.printList();
+  list2.pop_back();
   list2.printList();
 
   List<int> list3 = std::move(list2);
+  std::cout << "List 3 \n";
+  list3.printList();
+  list3.pop_back();
+  list3.pop_back();
   list3.printList();
 
   return 0;
