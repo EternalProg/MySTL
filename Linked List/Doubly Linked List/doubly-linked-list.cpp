@@ -296,32 +296,52 @@ void swap(DoublyLinkedList<T>& lhs, DoublyLinkedList<T>& rhs) {
     swap(lhs.tail, rhs.tail);
     swap(lhs._size, rhs._size);
 }
-/*
+
 template <typename T>
-void DoublyLinkedList<T>::sort() {
-    if (_size <= 1) {
+void DoublyLinkedList<T>::sort()
+{
+    if (_size < 2)
+    {
         return;
     }
-    Node<T>* current = head;
-    Node<T>* temp = nullptr;
 
-    while (current) {
+    Node<T> *current = head;
+    Node<T> *temp = nullptr;
+
+    while (current)
+    {
         temp = current->next;
-        while (temp) {
-            if (current->value > temp->value) {
-                // Використовуємо функцію swap для обміну вузлів
-                swap(*current, *temp);
+        while (temp)
+        {
+            if (current->value > temp->value)
+            {
+                swap(current->value, temp->value);
             }
             temp = temp->next;
         }
         current = current->next;
     }
 }
-*/
+
+template <typename T>
+void DoublyLinkedList<T>::clear() {
+    while (head) {
+        Node<T>* current = head;
+        head = head->next;
+        delete current;
+    }
+    tail = nullptr;
+    _size = 0;
+}
+
 
 template <typename T>
 void DoublyLinkedList<T>::printList()
 {
+    if(_size == 0) {
+        std::cout << "List is empty\n";
+        return;
+    }
     Node<T>* current = head;
 
     while(current) {
@@ -389,6 +409,10 @@ void runTests() {
 
     list.sort();
     list.printList();
+
+    list.clear();
+    list.printList();
+
 
     std::cout << "All tests passed!" << std::endl;
 }
